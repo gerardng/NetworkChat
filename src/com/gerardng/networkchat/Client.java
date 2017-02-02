@@ -46,13 +46,15 @@ public class Client extends JFrame {
 		this.name = name;
 		this.address = address;
 		this.port = port;
-		if(!openConnection(address, port)) {
+		if(!openConnection(address)) {
 			System.err.println("Error connecting!");
 			console("Error connecting!");
 		}
 		createWindow();
-		console("Connecting to " + address + " on port: " + port + " with alias: " + name);
-		console("Successfully connected");
+		console("Client.java:Connecting to " + address + " on port: " + port + " with alias: " + name);
+		console("Client.java:Successfully connected");
+		String connection = name + " connected from: " + address + ":" + port;
+		send(connection.getBytes());
 	}
 
 	private void createWindow() {
@@ -132,10 +134,12 @@ public class Client extends JFrame {
 		}
 		message = name + ": " + message;
 		console(message);
+		send(message.getBytes());
 		txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
 		txtMessage.setText("");
 	}
 	
+	// Creates individual thread to send packet through a socket
 	public void send(final byte[] data) {
 		send = new Thread("Send") {
 			public void run() {
@@ -148,25 +152,30 @@ public class Client extends JFrame {
 				}
 			}
 		};
+		send.start();
 	}
 	
 	public String receive() {
+		// Create a packet storage with a byte array
 		byte[] data = new byte[512];
 		DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
 		try {
+			// Socket receives the packet
 			// Potential to cause error, will sit until it receives data into the packet
 			datagramSocket.receive(datagramPacket);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		// Display output
 		String message = new String(datagramPacket.getData());
 		return message;
 	}
 	
-	public boolean openConnection(String address, int port) {
+	public boolean openConnection(String address) {
 		// Convert String to InetAddress
 		try {
-			datagramSocket = new DatagramSocket(port);
+			// No parameters means connect to any available port
+			datagramSocket = new DatagramSocket();
 			ip = InetAddress.getByName(address);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

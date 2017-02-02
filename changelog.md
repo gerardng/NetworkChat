@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - Project is still under construction
 
+## [0.1.1] - 2017-01-24
+### Added
+- ServerClients to handle information about clients connected to a server
+- Clients list in Server
+
+### Bug
+- New client is added every message sent
+
 ## [0.1.1] - 2017-01-19
 ### Added
 - Built text history and text message fields.

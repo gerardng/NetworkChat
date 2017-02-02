@@ -28,6 +28,7 @@ public class Login extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		// Create a separate runnable
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -107,8 +108,8 @@ public class Login extends JFrame {
 	 * Login
 	 */
 	private void login(String name, String address, int port) {
-		// TODO Auto-generated method stub
-		System.out.println(name + " " + address + " " + port);
+		dispose();
+		System.out.println("Login.java:" + name + " " + address + " " + port);
 		new Client(name, address, port);
 	}
 }
