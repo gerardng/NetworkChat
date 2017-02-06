@@ -26,14 +26,17 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class ClientWindow extends JFrame {
+public class ClientWindow extends JFrame implements Runnable {
 	private JPanel contentPane;
 	
 	private JTextField txtMessage;
 	private JTextArea txtHistory;
 	private DefaultCaret caret;
 	
+	private int ID = -1;
 	private Client client;
+	private Thread listen, run;
+	private boolean running = false;
 	
 	public ClientWindow(String name, String address, int port) {
 		setTitle("GChat Client");
@@ -45,8 +48,11 @@ public class ClientWindow extends JFrame {
 		createWindow();
 		console("Client.java:Connecting to " + address + " on port: " + port + " with alias: " + name);
 		console("Client.java:Successfully connected");
-		String connection = "/c/" + name;
+		String connection = "/c/" + name + "/e/";
 		client.send(connection.getBytes());
+		run = new Thread(this, "Running");
+		run.start();
+		running = true;
 	}
 	
 	private void createWindow() {
@@ -68,7 +74,7 @@ public class ClientWindow extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(txtMessage.getText());
+					send(txtMessage.getText(), true);
 				}
 			}
 		});
@@ -104,7 +110,7 @@ public class ClientWindow extends JFrame {
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(txtMessage.getText());
+				send(txtMessage.getText(), true);
 			}
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
@@ -118,18 +124,41 @@ public class ClientWindow extends JFrame {
 	
 	public void console(String message) {
 		txtHistory.append(message + "\n\r");
+		txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
 	}
 	
-	public void send(String message) {
-		if(message.equals("")) {
-			return;
+	private void send(String message, boolean text) {
+		if (message.equals("")) return;
+		if (text) {
+			message = client.getName() + ": " + message;
+			message = "/m/" + message + "/e/";
+			txtMessage.setText("");
 		}
-		message = client.getName() + ": " + message;
-		console(message);
-		message = "/m/" + message;
 		client.send(message.getBytes());
-		txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
-		txtMessage.setText("");
+	}
+	
+	public void listen() {
+		listen = new Thread("Listen") {
+			public void run() {
+				while(running) {
+					String message = client.receive();
+					if (message.startsWith("/c/")) {
+						client.setID(Integer.parseInt(message.split("/c/|/e/")[1]));
+						console("Successfully connected to server! ID: " + client.getID());
+					} else if (message.startsWith("/m/")) {
+						String text = message.substring(3);
+						text = text.split("/e/")[0];
+						console(text);
+					}
+				}
+			}
+		};
+		listen.start();
+	}
+	
+	public void run() {
+		// creates a new thread
+		listen();
 	}
 
 }

@@ -33,7 +33,6 @@ public class Server implements Runnable {
 		runThread.start();
 	}
 
-	@Override
 	public void run() {
 		running = true;
 		System.out.println("Server.java:Server started on port " + port);
@@ -57,7 +56,7 @@ public class Server implements Runnable {
 			public void run() {
 				while(running) {
 					// Running threads
-					byte[] data = new byte[512];
+					byte[] data = new byte[1024];
 					DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
 					try {
 						datagramSocket.receive(datagramPacket);
@@ -79,20 +78,28 @@ public class Server implements Runnable {
 	}
 	
 	private void process(DatagramPacket datagramPacket) {
-		String message = new String(datagramPacket.getData());
-		if(message.startsWith("/c/")) {
-			// guaranteed to be unique ID 128-bit value
-			//UUID id = UUID.randomUUID();
-			clients.add(new ServerClient(message.substring(3), datagramPacket.getAddress(), datagramPacket.getPort(), UniqueIdentifier.getIdentifier()));
-		} else if(message.startsWith("/m/")) {
-			sendToAll(message);
-		}
-		else {
-			System.out.println(message);
+		String string = new String(datagramPacket.getData());
+		if (string.startsWith("/c/")) {
+			// UUID id = UUID.randomUUID();
+			int id = UniqueIdentifier.getIdentifier();
+			String name = string.split("/c/|/e/")[1];
+			System.out.println(name + "(" + id + ") connected!");
+			clients.add(new ServerClient(name, datagramPacket.getAddress(), datagramPacket.getPort(), id));
+			String ID = "/c/" + id;
+			send(ID, datagramPacket.getAddress(), datagramPacket.getPort());
+		} else if (string.startsWith("/m/")) {
+			sendToAll(string);
+		} else {
+			System.out.println(string);
 		}
 	}
 	
 	private void sendToAll(String message) {
+		if (message.startsWith("/m/")) {
+			String text = message.substring(3);
+			text = text.split("/e/")[0];
+			System.out.println(message);
+		}
 		for(ServerClient client : clients) {
 			send(message.getBytes(), client.address, client.port);
 		}
@@ -111,6 +118,12 @@ public class Server implements Runnable {
 			}
 		};
 		send.start();
+	}
+	
+	// calls the send method
+	private void send(String message, InetAddress address, int port) {
+		message += "/e/";
+		send(message.getBytes(), address, port);
 	}
 
 }

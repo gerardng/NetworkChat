@@ -110,6 +110,6 @@ public class Login extends JFrame {
 	private void login(String name, String address, int port) {
 		dispose();
 		System.out.println("Login.java:" + name + " " + address + " " + port);
-		new Client(name, address, port);
+		new ClientWindow(name, address, port);
 	}
 }

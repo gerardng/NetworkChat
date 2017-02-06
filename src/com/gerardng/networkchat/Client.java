@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import com.gerardng.networkchat.server.ServerClient;
+import com.gerardng.networkchat.server.UniqueIdentifier;
+
 public class Client {
 	private static final long serailVersionUID = 1L;
 
@@ -17,12 +20,12 @@ public class Client {
 	private String name, address;
 	private Thread send;
 	private int port;
+	private int ID = -1;
 
 	public Client(String name, String address, int port) {
 		this.name = name;
 		this.address = address;
 		this.port = port;
-		// open connection here
 	}
 	
 	// Creates individual thread to send packet through a socket
@@ -43,7 +46,7 @@ public class Client {
 	
 	public String receive() {
 		// Create a packet storage with a byte array
-		byte[] data = new byte[512];
+		byte[] data = new byte[1024];
 		DatagramPacket datagramPacket = new DatagramPacket(data, data.length);
 		try {
 			// Socket receives the packet
@@ -53,8 +56,7 @@ public class Client {
 			e.printStackTrace();
 		}
 		// Display output
-		String message = new String(datagramPacket.getData());
-		return message;
+		return new String(datagramPacket.getData());
 	}
 	
 	public boolean openConnection(String address) {
@@ -72,6 +74,16 @@ public class Client {
 		}
 		return true;
 	}
+	
+	public void close() {
+		new Thread() {
+			public void run() {
+				synchronized(datagramSocket) {
+					datagramSocket.close();
+				}
+			}
+		}.start();
+	}
 
 	public String getName() {
 		return name;
@@ -83,5 +95,13 @@ public class Client {
 	
 	public int getPort() {
 		return port;
+	}
+	
+	public int getID() {
+		return ID;
+	}
+	
+	public void setID(int id) {
+		this.ID = id;
 	}
 }
