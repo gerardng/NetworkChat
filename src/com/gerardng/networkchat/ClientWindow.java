@@ -21,6 +21,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 public class ClientWindow extends JFrame implements Runnable {
 	private JPanel contentPane;
@@ -32,6 +34,7 @@ public class ClientWindow extends JFrame implements Runnable {
 	private Client client;
 	private Thread listen, run;
 	private boolean runningFlag = false;
+	private JLabel loggedInLabel;
 	
 	public ClientWindow(String name, String address, int port) {
 		runningFlag = true;
@@ -59,9 +62,9 @@ public class ClientWindow extends JFrame implements Runnable {
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
 		gbl_contentPane.columnWidths = new int[]{50, 0, 0};
-		gbl_contentPane.rowHeights = new int[]{50, 0, 0};
+		gbl_contentPane.rowHeights = new int[]{0, 50, 0, 0};
 		gbl_contentPane.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
 		txtMessage = new JTextField();
@@ -81,6 +84,13 @@ public class ClientWindow extends JFrame implements Runnable {
 		caret = (DefaultCaret) txtHistory.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		
+		loggedInLabel = new JLabel("Logged in as: " + client.getName());
+		GridBagConstraints gbc_loggedInLabel = new GridBagConstraints();
+		gbc_loggedInLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_loggedInLabel.gridx = 0;
+		gbc_loggedInLabel.gridy = 0;
+		contentPane.add(loggedInLabel, gbc_loggedInLabel);
+		
 		// Apply scrolling
 		JScrollPane scrollPage = new JScrollPane(txtHistory);
 		
@@ -88,7 +98,7 @@ public class ClientWindow extends JFrame implements Runnable {
 		gbc_txtHistory.insets = new Insets(20, 0, 5, 5);
 		gbc_txtHistory.fill = GridBagConstraints.BOTH;
 		gbc_txtHistory.gridx = 0;
-		gbc_txtHistory.gridy = 0;
+		gbc_txtHistory.gridy = 1;
 		gbc_txtHistory.gridwidth = 2;
 		gbc_txtHistory.insets = new Insets(20, 0, 0, 0);
 		contentPane.add(scrollPage, gbc_txtHistory);
@@ -97,7 +107,7 @@ public class ClientWindow extends JFrame implements Runnable {
 		gbc_txtMessage.insets = new Insets(0, 0, 0, 5);
 		gbc_txtMessage.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtMessage.gridx = 0;
-		gbc_txtMessage.gridy = 2;
+		gbc_txtMessage.gridy = 3;
 		gbc_txtMessage.gridwidth = 2;
 		contentPane.add(txtMessage, gbc_txtMessage);
 		txtMessage.setColumns(10);
@@ -110,7 +120,7 @@ public class ClientWindow extends JFrame implements Runnable {
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
 		gbc_btnSend.gridx = 2;
-		gbc_btnSend.gridy = 2;
+		gbc_btnSend.gridy = 3;
 		contentPane.add(btnSend, gbc_btnSend);
 		
 		addWindowListener(new WindowAdapter() {

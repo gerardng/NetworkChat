@@ -17,6 +17,5 @@ public class ServerMain {
 			return;
 		}
 		new ServerMain(Integer.parseInt(args[0]));
-
 	}
 }

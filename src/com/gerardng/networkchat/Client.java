@@ -13,7 +13,6 @@ import com.gerardng.networkchat.server.UniqueIdentifier;
 public class Client {
 	private static final long serailVersionUID = 1L;
 
-
 	// Our connection to the network
 	private DatagramSocket datagramSocket;
 	private InetAddress ip;
