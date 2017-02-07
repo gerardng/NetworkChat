@@ -19,12 +19,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class ClientWindow extends JFrame implements Runnable {
 	private JPanel contentPane;
@@ -33,29 +29,28 @@ public class ClientWindow extends JFrame implements Runnable {
 	private JTextArea txtHistory;
 	private DefaultCaret caret;
 	
-	private int ID = -1;
 	private Client client;
 	private Thread listen, run;
-	private boolean running = false;
+	private boolean runningFlag = false;
 	
 	public ClientWindow(String name, String address, int port) {
-		setTitle("GChat Client");
+		runningFlag = true;
 		client = new Client(name, address, port);
-		if(!client.openConnection(address)) {
+		if(!client.connect(address)) {
 			System.err.println("Error connecting!");
 			console("Error connecting!");
 		}
-		createWindow();
-		console("Client.java:Connecting to " + address + " on port: " + port + " with alias: " + name);
-		console("Client.java:Successfully connected");
-		String connection = "/c/" + name + "/e/";
+		createUI();
+		console("ClientWindow.java: Successfully connected to " + address + " on port: " + port + " with alias: " + name);
+		String connection = "/c/" + name;
 		client.send(connection.getBytes());
 		run = new Thread(this, "Running");
 		run.start();
-		running = true;
 	}
 	
-	private void createWindow() {
+	// Window builder editor
+	private void createUI() {
+		setTitle("GChat Client");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800,550);
 		setLocationRelativeTo(null);
@@ -74,7 +69,7 @@ public class ClientWindow extends JFrame implements Runnable {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(txtMessage.getText(), true);
+					send(txtMessage.getText());
 				}
 			}
 		});
@@ -110,7 +105,7 @@ public class ClientWindow extends JFrame implements Runnable {
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(txtMessage.getText(), true);
+				send(txtMessage.getText());
 			}
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
@@ -118,36 +113,31 @@ public class ClientWindow extends JFrame implements Runnable {
 		gbc_btnSend.gridy = 2;
 		contentPane.add(btnSend, gbc_btnSend);
 		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				String disconnect = "/d/" + client.getID() + "/e/";
+				send(disconnect);
+				runningFlag = false;
+				client.quit();
+			}
+		});
+		
 		setVisible(true);	
 		txtMessage.requestFocusInWindow();
 	}
 	
-	public void console(String message) {
-		txtHistory.append(message + "\n\r");
-		txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
-	}
-	
-	private void send(String message, boolean text) {
-		if (message.equals("")) return;
-		if (text) {
-			message = client.getName() + ": " + message;
-			message = "/m/" + message + "/e/";
-			txtMessage.setText("");
-		}
-		client.send(message.getBytes());
-	}
-	
-	public void listen() {
+	// Run method
+	public void run() {
+		// Parses messages from socket
 		listen = new Thread("Listen") {
 			public void run() {
-				while(running) {
+				while (runningFlag) {
 					String message = client.receive();
 					if (message.startsWith("/c/")) {
 						client.setID(Integer.parseInt(message.split("/c/|/e/")[1]));
 						console("Successfully connected to server! ID: " + client.getID());
 					} else if (message.startsWith("/m/")) {
-						String text = message.substring(3);
-						text = text.split("/e/")[0];
+						String text = message.split("/m/|/e/")[1];
 						console(text);
 					}
 				}
@@ -156,9 +146,25 @@ public class ClientWindow extends JFrame implements Runnable {
 		listen.start();
 	}
 	
-	public void run() {
-		// creates a new thread
-		listen();
+	// Prints messages the console
+	public void console(String message) {
+		txtHistory.append(message + "\n\r");
+		txtHistory.setCaretPosition(txtHistory.getDocument().getLength());
 	}
+	
+	// Wrapper method for Client's send(byte[])
+	private void send(String message) {
+		if (message.equals("")){
+			return;
+		} else if (message.startsWith("/d/")) {
+			client.send(message.getBytes());
+			txtMessage.setText("");
+		} else {
+			message = client.getName() + ": " + message;
+			message = "/m/" + message;
+			client.send(message.getBytes());
+			txtMessage.setText("");
+		}
 
+	}
 }

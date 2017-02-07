@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - Project is still under construction
 
+## [0.2.0] - 2017-02-07
+### Added
+- First basic fully functioning app
+
 ## [0.1.1] - 2017-02-01
 ### Added
 - Unique Identifier class that recycles unused id/s

@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import com.gerardng.networkchat.server.ServerClient;
+import com.gerardng.networkchat.server.ServerObject;
 import com.gerardng.networkchat.server.UniqueIdentifier;
 
 public class Client {
@@ -32,7 +32,7 @@ public class Client {
 	public void send(final byte[] data) {
 		send = new Thread("Send") {
 			public void run() {
-				// Datagram needs port if you are sending
+				// DataGram needs port if you are sending
 				DatagramPacket datagramPacket = new DatagramPacket(data, data.length, ip, port);
 				try {
 					datagramSocket.send(datagramPacket);
@@ -44,6 +44,7 @@ public class Client {
 		send.start();
 	}
 	
+	// Creates a packet to receive data from the socket
 	public String receive() {
 		// Create a packet storage with a byte array
 		byte[] data = new byte[1024];
@@ -56,10 +57,11 @@ public class Client {
 			e.printStackTrace();
 		}
 		// Display output
-		return new String(datagramPacket.getData());
+		String message = new String(datagramPacket.getData());
+		return message;
 	}
 	
-	public boolean openConnection(String address) {
+	public boolean connect(String address) {
 		// Convert String to InetAddress
 		try {
 			// No parameters means connect to any available port
@@ -75,7 +77,8 @@ public class Client {
 		return true;
 	}
 	
-	public void close() {
+	// Close the socket
+	public void quit() {
 		new Thread() {
 			public void run() {
 				synchronized(datagramSocket) {

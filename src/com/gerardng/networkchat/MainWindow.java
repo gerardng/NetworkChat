@@ -14,7 +14,8 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class Login extends JFrame {
+public class MainWindow extends JFrame {
+	private static final long serialVersionUID = 1L;
 
 	private JPanel contentPane;
 	private JTextField txtName;
@@ -32,7 +33,7 @@ public class Login extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Login frame = new Login();
+					MainWindow frame = new MainWindow();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -44,7 +45,7 @@ public class Login extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Login() {
+	public MainWindow() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
@@ -52,7 +53,11 @@ public class Login extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		createUI();
+	}
+	
+	// Window Builder Editor
+	private void createUI() {
 		setTitle("Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(300,380);
@@ -109,7 +114,7 @@ public class Login extends JFrame {
 	 */
 	private void login(String name, String address, int port) {
 		dispose();
-		System.out.println("Login.java:" + name + " " + address + " " + port);
+		System.out.println("MainWindow.java: " + name + " " + address + " " + port);
 		new ClientWindow(name, address, port);
 	}
 }
